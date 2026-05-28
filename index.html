@@ -1,0 +1,527 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Mouse Escape</title>
+    <meta
+      name="description"
+      content="Mouse Escape is a quick, cheerful puzzle escape game about timing, paths, and tiny victories."
+    >
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #17202a;
+        --muted: #5d6b77;
+        --paper: #fffdf7;
+        --line: rgba(23, 32, 42, 0.13);
+        --mint: #72d6a2;
+        --blue: #5aa9e6;
+        --rose: #ff7f82;
+        --gold: #f7c948;
+        --shadow: 0 18px 48px rgba(23, 32, 42, 0.14);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background:
+          radial-gradient(circle at 12% 16%, rgba(114, 214, 162, 0.25), transparent 28%),
+          radial-gradient(circle at 84% 10%, rgba(255, 127, 130, 0.18), transparent 24%),
+          linear-gradient(180deg, #fffdf7 0%, #f2fbff 52%, #fff9ed 100%);
+        color: var(--ink);
+      }
+
+      a {
+        color: inherit;
+      }
+
+      .page {
+        min-height: 100vh;
+        overflow: hidden;
+      }
+
+      .shell {
+        width: min(1120px, calc(100% - 32px));
+        margin: 0 auto;
+      }
+
+      .nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        padding: 22px 0;
+      }
+
+      .brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 800;
+      }
+
+      .mark {
+        display: grid;
+        width: 38px;
+        height: 38px;
+        place-items: center;
+        border: 2px solid var(--ink);
+        border-radius: 10px;
+        background: var(--gold);
+        box-shadow: 4px 4px 0 rgba(23, 32, 42, 0.18);
+      }
+
+      .links {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        color: var(--muted);
+        font-size: 0.94rem;
+      }
+
+      .links a {
+        text-decoration: none;
+      }
+
+      .hero {
+        display: grid;
+        grid-template-columns: minmax(0, 1.05fr) minmax(320px, 0.95fr);
+        gap: 48px;
+        align-items: center;
+        min-height: calc(100vh - 86px);
+        padding: 28px 0 72px;
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        width: fit-content;
+        margin: 0 0 18px;
+        padding: 7px 11px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.72);
+        color: var(--muted);
+        font-size: 0.88rem;
+        font-weight: 700;
+      }
+
+      h1 {
+        margin: 0;
+        max-width: 720px;
+        font-size: clamp(3.15rem, 8vw, 6.6rem);
+        line-height: 0.91;
+        letter-spacing: 0;
+      }
+
+      .lead {
+        max-width: 590px;
+        margin: 24px 0 0;
+        color: var(--muted);
+        font-size: clamp(1.1rem, 2vw, 1.35rem);
+        line-height: 1.6;
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 30px;
+      }
+
+      .button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 48px;
+        padding: 0 18px;
+        border: 2px solid var(--ink);
+        border-radius: 12px;
+        background: var(--ink);
+        color: #fff;
+        font-weight: 800;
+        text-decoration: none;
+        box-shadow: 5px 5px 0 rgba(23, 32, 42, 0.16);
+      }
+
+      .button.secondary {
+        background: #fff;
+        color: var(--ink);
+      }
+
+      .stage {
+        position: relative;
+        min-height: 520px;
+      }
+
+      .maze {
+        position: absolute;
+        inset: 20px 0 0;
+        border: 3px solid var(--ink);
+        border-radius: 22px;
+        background:
+          linear-gradient(90deg, rgba(23, 32, 42, 0.08) 2px, transparent 2px) 0 0 / 72px 72px,
+          linear-gradient(rgba(23, 32, 42, 0.08) 2px, transparent 2px) 0 0 / 72px 72px,
+          #ffffff;
+        box-shadow: var(--shadow);
+      }
+
+      .wall {
+        position: absolute;
+        border-radius: 12px;
+        background: var(--ink);
+      }
+
+      .wall.one {
+        top: 78px;
+        left: 62px;
+        width: 250px;
+        height: 18px;
+      }
+
+      .wall.two {
+        top: 155px;
+        right: 66px;
+        width: 18px;
+        height: 230px;
+      }
+
+      .wall.three {
+        right: 128px;
+        bottom: 104px;
+        width: 230px;
+        height: 18px;
+      }
+
+      .wall.four {
+        left: 88px;
+        bottom: 86px;
+        width: 18px;
+        height: 190px;
+      }
+
+      .cheese {
+        position: absolute;
+        right: 55px;
+        top: 64px;
+        width: 76px;
+        height: 64px;
+        border: 3px solid var(--ink);
+        border-radius: 15px 20px 15px 12px;
+        background: var(--gold);
+        box-shadow: 5px 5px 0 rgba(23, 32, 42, 0.16);
+        transform: rotate(-6deg);
+      }
+
+      .cheese::before,
+      .cheese::after {
+        content: "";
+        position: absolute;
+        border: 2px solid rgba(23, 32, 42, 0.45);
+        border-radius: 999px;
+      }
+
+      .cheese::before {
+        width: 13px;
+        height: 13px;
+        left: 16px;
+        top: 15px;
+      }
+
+      .cheese::after {
+        width: 18px;
+        height: 18px;
+        right: 15px;
+        bottom: 12px;
+      }
+
+      .mouse {
+        position: absolute;
+        left: 72px;
+        bottom: 54px;
+        width: 112px;
+        height: 82px;
+        border: 3px solid var(--ink);
+        border-radius: 48% 44% 44% 48%;
+        background: #dde5ed;
+        box-shadow: 7px 7px 0 rgba(23, 32, 42, 0.16);
+      }
+
+      .mouse::before,
+      .mouse::after {
+        content: "";
+        position: absolute;
+        border: 3px solid var(--ink);
+        border-radius: 999px;
+        background: #f2b8c6;
+      }
+
+      .mouse::before {
+        width: 40px;
+        height: 40px;
+        left: 9px;
+        top: -20px;
+      }
+
+      .mouse::after {
+        width: 30px;
+        height: 30px;
+        right: 15px;
+        top: -13px;
+      }
+
+      .eye {
+        position: absolute;
+        right: 24px;
+        top: 28px;
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background: var(--ink);
+      }
+
+      .tail {
+        position: absolute;
+        left: -52px;
+        bottom: 25px;
+        width: 60px;
+        height: 34px;
+        border-bottom: 4px solid var(--rose);
+        border-left: 4px solid var(--rose);
+        border-radius: 0 0 0 40px;
+      }
+
+      .path {
+        position: absolute;
+        left: 164px;
+        right: 116px;
+        bottom: 114px;
+        height: 150px;
+        border-top: 5px dashed var(--blue);
+        border-right: 5px dashed var(--blue);
+        border-radius: 0 28px 0 0;
+      }
+
+      .features {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 18px;
+        padding: 18px 0 64px;
+      }
+
+      .feature {
+        min-height: 178px;
+        padding: 24px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.74);
+      }
+
+      .feature strong {
+        display: block;
+        margin-bottom: 10px;
+        font-size: 1.08rem;
+      }
+
+      .feature p {
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.55;
+      }
+
+      footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+        padding: 24px 0 34px;
+        border-top: 1px solid var(--line);
+        color: var(--muted);
+        font-size: 0.92rem;
+      }
+
+      footer nav {
+        display: flex;
+        gap: 14px;
+      }
+
+      @media (max-width: 840px) {
+        .links {
+          display: none;
+        }
+
+        .hero {
+          grid-template-columns: 1fr;
+          gap: 22px;
+          min-height: auto;
+          padding-top: 18px;
+        }
+
+        .stage {
+          min-height: 390px;
+          order: -1;
+        }
+
+        .maze {
+          inset: 0;
+        }
+
+        .wall.one {
+          left: 38px;
+          width: 190px;
+        }
+
+        .wall.two {
+          right: 42px;
+          height: 164px;
+        }
+
+        .wall.three {
+          right: 86px;
+          width: 170px;
+        }
+
+        .wall.four {
+          left: 55px;
+          height: 140px;
+        }
+
+        .features {
+          grid-template-columns: 1fr;
+        }
+
+        footer {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+      }
+
+      @media (max-width: 520px) {
+        .shell {
+          width: min(100% - 24px, 1120px);
+        }
+
+        .stage {
+          min-height: 310px;
+        }
+
+        .mouse {
+          left: 48px;
+          bottom: 38px;
+          transform: scale(0.78);
+          transform-origin: left bottom;
+        }
+
+        .cheese {
+          right: 28px;
+          top: 42px;
+          transform: scale(0.76) rotate(-6deg);
+          transform-origin: right top;
+        }
+
+        .path {
+          left: 128px;
+          right: 82px;
+          bottom: 90px;
+          height: 116px;
+        }
+
+        .wall.one {
+          top: 66px;
+          width: 145px;
+        }
+
+        .wall.two {
+          top: 126px;
+          height: 118px;
+        }
+
+        .wall.three {
+          bottom: 75px;
+          width: 124px;
+        }
+
+        .wall.four {
+          bottom: 63px;
+          height: 108px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <header class="shell nav" aria-label="Site header">
+        <a class="brand" href="./" aria-label="Mouse Escape home">
+          <span class="mark" aria-hidden="true">M</span>
+          <span>Mouse Escape</span>
+        </a>
+        <nav class="links" aria-label="Page links">
+          <a href="#features">Features</a>
+          <a href="support.html">Support</a>
+          <a href="privacy.html">Privacy</a>
+        </nav>
+      </header>
+
+      <main class="shell">
+        <section class="hero">
+          <div>
+            <p class="eyebrow">Quick puzzle runs for iPhone</p>
+            <h1>Mouse Escape</h1>
+            <p class="lead">
+              Guide a quick little mouse through tidy maze challenges. Read the path,
+              time your move, and celebrate every clean escape.
+            </p>
+            <div class="actions">
+              <a class="button" href="support.html">Get Support</a>
+              <a class="button secondary" href="privacy.html">Privacy Policy</a>
+            </div>
+          </div>
+
+          <div class="stage" aria-label="Mouse maze illustration">
+            <div class="maze">
+              <div class="wall one"></div>
+              <div class="wall two"></div>
+              <div class="wall three"></div>
+              <div class="wall four"></div>
+              <div class="path"></div>
+              <div class="cheese"></div>
+              <div class="mouse">
+                <span class="tail"></span>
+                <span class="eye"></span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="features" class="features" aria-label="Mouse Escape features">
+          <article class="feature">
+            <strong>Fast to start</strong>
+            <p>Short sessions make it easy to play whenever you have a free minute.</p>
+          </article>
+          <article class="feature">
+            <strong>Easy to read</strong>
+            <p>Bright paths and simple goals keep the focus on timing and decisions.</p>
+          </article>
+          <article class="feature">
+            <strong>Built for escape</strong>
+            <p>Each run is about finding a route, avoiding mistakes, and finishing clean.</p>
+          </article>
+        </section>
+      </main>
+
+      <footer class="shell">
+        <span>Copyright 2026 Mouse Escape. All rights reserved.</span>
+        <nav aria-label="Footer links">
+          <a href="support.html">Support</a>
+          <a href="privacy.html">Privacy</a>
+        </nav>
+      </footer>
+    </div>
+  </body>
+</html>
